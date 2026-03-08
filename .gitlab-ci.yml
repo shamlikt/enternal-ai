@@ -1,0 +1,128 @@
+stages:
+  - lint
+  - test
+  - build
+  - push
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  npm_config_cache: "$CI_PROJECT_DIR/.cache/npm"
+
+cache:
+  paths:
+    - .cache/pip
+    - .cache/npm
+
+# ─── Lint ────────────────────────────────────────────────────────────────────
+
+lint-backend:
+  stage: lint
+  image: python:3.11-slim
+  script:
+    - cd backend
+    - pip install --quiet ruff mypy
+    - ruff check .
+    - mypy app/ --ignore-missing-imports
+
+lint-frontend:
+  stage: lint
+  image: node:20-alpine
+  script:
+    - cd frontend
+    - npm ci --quiet
+    - npx eslint .
+
+# ─── Test ────────────────────────────────────────────────────────────────────
+
+test-backend:
+  stage: test
+  image: python:3.11-slim
+  services:
+    - name: postgres:16
+      alias: postgres
+  variables:
+    POSTGRES_DB: enternal_test
+    POSTGRES_USER: test_user
+    POSTGRES_PASSWORD: test_password
+    DATABASE_URL: postgresql+asyncpg://test_user:test_password@postgres:5432/enternal_test
+    JWT_SECRET_KEY: test-secret-key-for-ci-only
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq libpq-dev gcc
+    - cd backend
+    - pip install --quiet .[dev]
+  script:
+    - pytest tests/unit/ tests/api/ --cov=app --cov-report=term-missing --cov-report=xml:coverage.xml -q
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.xml
+
+test-frontend:
+  stage: test
+  image: node:20-alpine
+  script:
+    - cd frontend
+    - npm ci --quiet
+    - npx vitest run --coverage
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml
+
+# ─── Build ───────────────────────────────────────────────────────────────────
+
+build-backend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build
+        --tag $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+        --tag $CI_REGISTRY_IMAGE/backend:latest
+        ./backend
+  only:
+    - main
+    - merge_requests
+
+build-frontend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build
+        --tag $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA
+        --tag $CI_REGISTRY_IMAGE/frontend:latest
+        ./frontend
+  only:
+    - main
+    - merge_requests
+
+# ─── Push ────────────────────────────────────────────────────────────────────
+
+push-images:
+  stage: push
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+    - docker pull $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/backend:latest
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/frontend:latest
+  only:
+    - main
