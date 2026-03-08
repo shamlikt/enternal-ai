@@ -1,0 +1,11 @@
+{
+  "VITAL": {
+    "VITALID": "obs-vital-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "MEASURE_DATE": "2024-06-15",
+    "SYSTOLIC": 118.0,
+    "DIASTOLIC": 76.0,
+    "VITAL_SOURCE": "PR"
+  }
+}

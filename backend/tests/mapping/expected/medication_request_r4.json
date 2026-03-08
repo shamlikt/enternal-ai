@@ -1,0 +1,17 @@
+{
+  "PRESCRIBING": {
+    "PRESCRIBINGID": "rx-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "RXNORM_CUI": "860975",
+    "RAW_RX_MED_NAME": "Metformin 500mg",
+    "RX_ORDER_DATE": "2024-06-15",
+    "RX_START_DATE": "2024-06-15",
+    "RX_END_DATE": "2024-12-15",
+    "RX_DAYS_SUPPLY": 30,
+    "RX_REFILLS": 5,
+    "RX_QUANTITY": 60.0,
+    "RX_SOURCE": "OD",
+    "RX_PROVIDERID": "prov-001"
+  }
+}

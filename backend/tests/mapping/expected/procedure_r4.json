@@ -1,0 +1,12 @@
+{
+  "PROCEDURES": {
+    "PROCEDURESID": "proc-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "PX": "99213",
+    "PX_TYPE": "CH",
+    "PX_SOURCE": "FH",
+    "PX_DATE": "2024-06-15",
+    "PROVIDERID": "prov-001"
+  }
+}

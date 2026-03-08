@@ -1,0 +1,14 @@
+{
+  "IMMUNIZATION": {
+    "IMMUNIZATIONID": "imm-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "VX_CODE": "140",
+    "VX_CODE_TYPE": "CV",
+    "VX_ADMIN_DATE": "2024-06-15",
+    "VX_STATUS": "CP",
+    "VX_SOURCE": "RG",
+    "VX_DOSE_NUM": 1.0,
+    "VX_PROVIDERID": "prov-001"
+  }
+}

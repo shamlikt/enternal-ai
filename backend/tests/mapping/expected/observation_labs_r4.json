@@ -1,0 +1,16 @@
+{
+  "LAB_RESULT_CM": {
+    "LAB_RESULT_CM_ID": "obs-lab-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "LAB_LOINC": "4548-4",
+    "LAB_RESULT_SOURCE": "LR",
+    "SPECIMEN_DATE": "2024-06-14",
+    "RESULT_DATE": "2024-06-14",
+    "RESULT_NUM": 7.2,
+    "RESULT_UNIT": "%",
+    "ABN_IND": "AH",
+    "RAW_LAB_NAME": "HbA1c",
+    "RAW_LAB_CODE": "4548-4"
+  }
+}

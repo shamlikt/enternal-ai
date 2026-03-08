@@ -1,0 +1,32 @@
+{
+  "resourceType": "MedicationDispense",
+  "id": "disp-001",
+  "status": "completed",
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://hl7.org/fhir/sid/ndc",
+        "code": "0093-1048-01",
+        "display": "Metformin HCl 500mg Tablet"
+      }
+    ],
+    "text": "Metformin HCl 500mg"
+  },
+  "subject": {
+    "reference": "Patient/pat-001"
+  },
+  "authorizingPrescription": [
+    {
+      "reference": "MedicationRequest/rx-001"
+    }
+  ],
+  "quantity": {
+    "value": 60,
+    "unit": "tablet"
+  },
+  "daysSupply": {
+    "value": 30,
+    "unit": "days"
+  },
+  "whenHandedOver": "2024-06-16T14:00:00Z"
+}

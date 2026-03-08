@@ -1,0 +1,11 @@
+{
+  "DEMOGRAPHIC": {
+    "PATID": "pat-r5-001",
+    "BIRTH_DATE": "1978-09-22",
+    "SEX": "M",
+    "RAW_SEX": "male",
+    "RACE": "03",
+    "HISPANIC": "Y",
+    "PAT_PREF_LANGUAGE_SPOKEN": "es"
+  }
+}

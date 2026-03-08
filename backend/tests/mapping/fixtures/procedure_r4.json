@@ -1,0 +1,28 @@
+{
+  "resourceType": "Procedure",
+  "id": "proc-001",
+  "status": "completed",
+  "code": {
+    "coding": [
+      {
+        "system": "http://www.ama-assn.org/go/cpt",
+        "code": "99213",
+        "display": "Office or other outpatient visit"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/pat-001"
+  },
+  "encounter": {
+    "reference": "Encounter/enc-001"
+  },
+  "performedDateTime": "2024-06-15",
+  "performer": [
+    {
+      "actor": {
+        "reference": "Practitioner/prov-001"
+      }
+    }
+  ]
+}

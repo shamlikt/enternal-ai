@@ -1,0 +1,11 @@
+{
+  "DEMOGRAPHIC": {
+    "PATID": "pat-001",
+    "BIRTH_DATE": "1985-03-15",
+    "SEX": "F",
+    "RAW_SEX": "female",
+    "RACE": "05",
+    "HISPANIC": "N",
+    "PAT_PREF_LANGUAGE_SPOKEN": "en"
+  }
+}

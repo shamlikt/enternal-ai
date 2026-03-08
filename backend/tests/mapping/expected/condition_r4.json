@@ -1,0 +1,20 @@
+{
+  "DIAGNOSIS": {
+    "DIAGNOSISID": "cond-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "DX": "E11.9",
+    "DX_TYPE": "10",
+    "DX_SOURCE": "FH",
+    "ADMIT_DATE": "2020-01-10"
+  },
+  "CONDITION": {
+    "CONDITIONID": "cond-001",
+    "PATID": "pat-001",
+    "ENCOUNTERID": "enc-001",
+    "CONDITION": "E11.9",
+    "CONDITION_STATUS": "AC",
+    "CONDITION_SOURCE": "FH",
+    "ONSET_DATE": "2020-01-10"
+  }
+}

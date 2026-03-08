@@ -1,0 +1,11 @@
+{
+  "ENCOUNTER": {
+    "ENCOUNTERID": "enc-r5-001",
+    "PATID": "pat-r5-001",
+    "ADMIT_DATE": "2024-05-01",
+    "DISCHARGE_DATE": "2024-05-05",
+    "ENC_TYPE": "IP",
+    "RAW_ENC_TYPE": "IMP",
+    "PROVIDERID": "prov-002"
+  }
+}

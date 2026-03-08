@@ -1,0 +1,12 @@
+{
+  "DISPENSING": {
+    "DISPENSINGID": "disp-001",
+    "PATID": "pat-001",
+    "PRESCRIBINGID": "rx-001",
+    "NDC": "0093-1048-01",
+    "DISPENSE_DATE": "2024-06-16",
+    "DISPENSE_AMT": 60.0,
+    "DISPENSE_SUP": 30,
+    "DISPENSE_SOURCE": "DP"
+  }
+}

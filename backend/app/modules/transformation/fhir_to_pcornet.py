@@ -28,25 +28,41 @@ def _map_sex(gender: str | None) -> str | None:
 
 
 def _map_race(extensions: list[dict]) -> str | None:
+    race_map = {
+        "1002-5": "01",  # American Indian/Alaska Native
+        "2028-9": "02",  # Asian
+        "2054-5": "03",  # Black/African American
+        "2076-8": "04",  # Native Hawaiian/Pacific Islander
+        "2106-3": "05",  # White
+        "2131-1": "OT",  # Other Race
+    }
     for ext in extensions:
-        if "ombCategory" in ext.get("url", "") or "race" in ext.get("url", "").lower():
+        if "race" in ext.get("url", "").lower():
+            # US Core race: nested extensions with ombCategory
+            for nested in ext.get("extension", []):
+                if nested.get("url") == "ombCategory":
+                    code = nested.get("valueCoding", {}).get("code")
+                    return race_map.get(code, "OT")
+            # Direct valueCoding (simpler structure)
             value_coding = ext.get("valueCoding", {})
             code = value_coding.get("code")
-            race_map = {
-                "1002-5": "01",  # American Indian/Alaska Native
-                "2028-9": "02",  # Asian
-                "2054-5": "03",  # Black/African American
-                "2076-8": "04",  # Native Hawaiian/Pacific Islander
-                "2106-3": "05",  # White
-                "2131-1": "OT",  # Other Race
-            }
-            return race_map.get(code, "OT")
+            if code:
+                return race_map.get(code, "OT")
     return None
 
 
 def _map_hispanic(extensions: list[dict]) -> str | None:
     for ext in extensions:
         if "ethnicity" in ext.get("url", "").lower():
+            # US Core ethnicity: nested extensions with ombCategory
+            for nested in ext.get("extension", []):
+                if nested.get("url") == "ombCategory":
+                    code = nested.get("valueCoding", {}).get("code")
+                    if code == "2135-2":
+                        return "Y"
+                    if code == "2186-5":
+                        return "N"
+            # Direct valueCoding fallback
             value_coding = ext.get("valueCoding", {})
             code = value_coding.get("code")
             if code == "2135-2":
@@ -313,6 +329,11 @@ def map_observation_to_vital(resource: dict[str, Any]) -> dict[str, Any]:
         "ENCOUNTERID": encounterid,
         "MEASURE_DATE": measure_date,
         "VITAL_SOURCE": "PR",
+        "HT": None,
+        "WT": None,
+        "SYSTOLIC": None,
+        "DIASTOLIC": None,
+        "ORIGINAL_BMI": None,
     }
 
     if vital_field and value is not None:
