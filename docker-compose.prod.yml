@@ -1,0 +1,65 @@
+# docker-compose.prod.yml — Production overrides for customer deployments.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# This file overrides settings in docker-compose.yml for production:
+# - Pinned image tags (pulled from GitLab Container Registry)
+# - Resource limits
+# - Structured logging via json-file driver
+# - No build context (images are pre-built and pushed by CI)
+# - TLS termination note: place a reverse proxy (nginx/caddy/traefik) in front
+
+services:
+  backend:
+    image: ${CI_REGISTRY_IMAGE}/backend:${IMAGE_TAG:-latest}
+    build: !reset null
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "10"
+    restart: always
+
+  frontend:
+    image: ${CI_REGISTRY_IMAGE}/frontend:${IMAGE_TAG:-latest}
+    build: !reset null
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: always
+
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: always
+    # Persist data — ensure the host path is backed up regularly.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
