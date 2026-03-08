@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.exceptions import AppException, app_exception_handler
 from app.core.logging import configure_logging
+from app.modules.auth.router import router as auth_router
+from app.modules.auth.router import users_router
 
 configure_logging()
 
@@ -22,6 +24,9 @@ app.add_middleware(
 )
 
 app.add_exception_handler(AppException, app_exception_handler)
+
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(users_router, prefix="/api/v1/users", tags=["users"])
 
 
 @app.get("/api/v1/health")
