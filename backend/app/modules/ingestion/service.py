@@ -170,6 +170,114 @@ async def run_fhir_ingestion(
     return ingestion_run
 
 
+async def test_snowflake_connection(config: dict) -> bool:
+    from app.modules.ingestion.snowflake_client import SnowflakeClient
+
+    client = SnowflakeClient(
+        account=config["account"],
+        username=config["username"],
+        password=config["password"],
+        database=config["database"],
+        schema_name=config.get("schema_name", "PUBLIC"),
+        warehouse=config["warehouse"],
+        role=config.get("role"),
+    )
+    return await client.test_connection()
+
+
+async def run_snowflake_ingestion(
+    db: AsyncSession,
+    integration: Integration,
+    transformation_engine: Any,
+) -> IngestionRun:
+    from app.modules.ingestion.snowflake_client import SnowflakeClient
+
+    config = integration.config_json
+
+    last_run_result = await db.execute(
+        select(IngestionRun)
+        .where(
+            IngestionRun.integration_id == integration.id,
+            IngestionRun.status == "completed",
+        )
+        .order_by(IngestionRun.completed_at.desc())
+        .limit(1)
+    )
+    last_run = last_run_result.scalar_one_or_none()
+    last_cursor = last_run.last_cursor if last_run else None
+
+    ingestion_run = IngestionRun(
+        integration_id=integration.id,
+        status="running",
+    )
+    db.add(ingestion_run)
+    await db.commit()
+    await db.refresh(ingestion_run)
+
+    client = SnowflakeClient(
+        account=config["account"],
+        username=config["username"],
+        password=config["password"],
+        database=config["database"],
+        schema_name=config.get("schema_name", "PUBLIC"),
+        warehouse=config["warehouse"],
+        role=config.get("role"),
+    )
+
+    records_processed = 0
+    records_failed = 0
+    sync_cursor = datetime.now(timezone.utc).isoformat()
+
+    try:
+        await client.connect()
+        tables = await client.get_tables()
+        for table_name in tables:
+            rows = await client.fetch_rows_paginated(
+                table_name,
+                last_updated_col=config.get("last_updated_col"),
+                last_cursor=last_cursor,
+                page_size=1000,
+            )
+            for row in rows:
+                try:
+                    cdm_table, mapped_data = transformation_engine.transform_dataview_resource(
+                        table_name, row
+                    )
+                    # Persist via validator + upsert (handled in DataView mapper)
+                    records_processed += 1
+                except Exception as e:
+                    records_failed += 1
+                    quarantine_record = Quarantine(
+                        ingestion_run_id=ingestion_run.id,
+                        source_data=dict(row),
+                        error_message=str(e),
+                        source_resource_type=table_name,
+                    )
+                    db.add(quarantine_record)
+                    await db.commit()
+                    logger.warning(
+                        "snowflake_row_transform_failed",
+                        table=table_name,
+                        error=str(e),
+                    )
+
+        ingestion_run.status = "completed"
+        ingestion_run.last_cursor = sync_cursor
+    except Exception as e:
+        ingestion_run.status = "failed"
+        ingestion_run.error_message = str(e)
+        logger.error("snowflake_ingestion_failed", integration_id=integration.id, error=str(e))
+    finally:
+        await client.close()
+        ingestion_run.records_processed = records_processed
+        ingestion_run.records_failed = records_failed
+        ingestion_run.completed_at = datetime.now(timezone.utc)
+        await db.commit()
+        await db.refresh(ingestion_run)
+
+    return ingestion_run
+
+
 async def list_quarantine_records(
     db: AsyncSession,
     run_id: int | None = None,
