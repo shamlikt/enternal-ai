@@ -165,19 +165,21 @@ class TestQueryExecuteResponse:
     def test_valid_response(self):
         resp = QueryExecuteResponse(
             history_id=1,
+            columns=["PATID", "SEX"],
             rows=[{"PATID": "P001", "SEX": "M"}, {"PATID": "P002", "SEX": "F"}],
             row_count=2,
-            execution_ms=45,
+            execution_time_ms=45,
         )
         assert resp.row_count == 2
-        assert resp.execution_ms == 45
+        assert resp.execution_time_ms == 45
+        assert resp.columns == ["PATID", "SEX"]
 
     def test_empty_rows(self):
         resp = QueryExecuteResponse(
             history_id=5,
             rows=[],
             row_count=0,
-            execution_ms=12,
+            execution_time_ms=12,
         )
         assert resp.rows == []
         assert resp.row_count == 0

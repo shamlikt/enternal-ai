@@ -59,7 +59,8 @@ class TestQueryExecuteEndpoint:
         body = resp.json()
         assert "rows" in body
         assert body["row_count"] == 1
-        assert body["execution_ms"] == 42
+        assert body["execution_time_ms"] == 42
+        assert "columns" in body
 
     @pytest.mark.asyncio
     async def test_viewer_cannot_execute_query_returns_403(self):

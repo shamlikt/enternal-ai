@@ -35,11 +35,13 @@ async def run_query(
     db: AsyncSession = Depends(get_db),
 ):
     rows, history_id, elapsed_ms = await execute_query(db, current_user.id, request.sql)
+    columns = list(rows[0].keys()) if rows else []
     return QueryExecuteResponse(
         history_id=history_id,
+        columns=columns,
         rows=rows,
         row_count=len(rows),
-        execution_ms=elapsed_ms,
+        execution_time_ms=elapsed_ms,
     )
 
 
@@ -91,6 +93,24 @@ async def delete_saved(
     if not query:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Query not found")
     await delete_saved_query(db, query)
+
+
+@router.get("/schema", response_model=list[dict])
+async def get_full_schema(
+    _: User = Depends(require_role(Role.ADMIN, Role.ANALYST)),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return all tables with their columns for the Data Explorer tree view."""
+    table_names = await get_tables(db)
+    result = []
+    for name in table_names:
+        cols = await get_columns(db, name)
+        result.append({
+            "name": name,
+            "description": "",
+            "columns": cols,
+        })
+    return result
 
 
 schema_router = APIRouter()

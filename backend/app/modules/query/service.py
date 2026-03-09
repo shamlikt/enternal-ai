@@ -49,11 +49,16 @@ async def execute_query(
         raise
     except Exception as exc:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        history = QueryHistory(
-            user_id=user_id, sql=sql, execution_ms=elapsed_ms, error=str(exc)
-        )
-        db.add(history)
-        await db.commit()
+        # Rollback the failed transaction before writing error history
+        await db.rollback()
+        try:
+            history = QueryHistory(
+                user_id=user_id, sql=sql, execution_ms=elapsed_ms, error=str(exc)
+            )
+            db.add(history)
+            await db.commit()
+        except Exception:
+            pass  # Don't let history logging mask the original error
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Query execution failed: {exc}",

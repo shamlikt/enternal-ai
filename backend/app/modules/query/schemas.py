@@ -11,9 +11,10 @@ class QueryExecuteRequest(BaseModel):
 
 class QueryExecuteResponse(BaseModel):
     history_id: int
+    columns: list[str] = []
     rows: list[dict[str, Any]]
     row_count: int
-    execution_ms: int
+    execution_time_ms: int
 
 
 class SavedQueryCreate(BaseModel):
