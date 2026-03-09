@@ -2,22 +2,13 @@
  * E2E tests: Login flow
  *
  * Prerequisites: Full stack running via docker compose up.
- * Admin user created by the seeder: username=admin, password=adminpass123
- *
- * Tests:
- * - Login page renders correctly
- * - Valid credentials redirect to /dashboard
- * - Invalid credentials show error message
- * - Unauthenticated access to protected pages redirects to /login
+ * Admin user created by the seeder: username=admin, password=changeme
  */
 import { test, expect } from "@playwright/test";
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "adminpass123";
+import { ADMIN_USERNAME, ADMIN_PASSWORD } from "./helpers";
 
 test.describe("Login flow", () => {
   test.beforeEach(async ({ page }) => {
-    // Clear any existing auth state
     await page.context().clearCookies();
     await page.evaluate(() => localStorage.clear());
   });
@@ -39,7 +30,6 @@ test.describe("Login flow", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await expect(page).toHaveURL(/\/dashboard/);
-    // Dashboard should show navigation
     await expect(page.getByText("Dashboard")).toBeVisible();
   });
 
@@ -50,7 +40,6 @@ test.describe("Login flow", () => {
     await page.getByLabel("Password").fill("wrongpassword");
     await page.getByRole("button", { name: /sign in/i }).click();
 
-    // Error message should appear, stay on login page
     await expect(page.getByRole("alert").or(page.locator(".text-red-700"))).toBeVisible({
       timeout: 5000,
     });
@@ -77,12 +66,9 @@ test.describe("Login flow", () => {
     await page.getByLabel("Username").fill(ADMIN_USERNAME);
     await page.getByLabel("Password").fill(ADMIN_PASSWORD);
 
-    // Click and immediately check for loading state
     const signInButton = page.getByRole("button", { name: /sign in/i });
     await signInButton.click();
 
-    // Button should briefly show "Signing in..."
-    // (may complete quickly, so we don't assert strictly)
     await expect(page).toHaveURL(/\/(dashboard|login)/, { timeout: 5000 });
   });
 });

@@ -1,30 +1,11 @@
 /**
  * E2E tests: Agent Search (AI chat) page
  *
- * Prerequisites: Full stack running, admin user seeded, AWS Bedrock configured.
- *
- * Tests:
- * - Agent page loads
- * - Chat input is visible
- * - Session list panel is present
- * - Sending a message shows it in the chat
- *
- * Note: The actual AI response requires AWS Bedrock credentials.
- * Tests that depend on LLM responses use mock responses via network interception
- * or skip assertions on the AI response content.
+ * Prerequisites: Full stack running, admin user seeded.
+ * Note: Actual AI responses require AWS Bedrock credentials.
  */
-import { test, expect, Page } from "@playwright/test";
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "adminpass123";
-
-async function loginAsAdmin(page: Page) {
-  await page.goto("/login");
-  await page.getByLabel("Username").fill(ADMIN_USERNAME);
-  await page.getByLabel("Password").fill(ADMIN_PASSWORD);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
-}
+import { test, expect } from "@playwright/test";
+import { loginAsAdmin } from "./helpers";
 
 test.describe("Agent Search", () => {
   test.beforeEach(async ({ page }) => {
@@ -34,7 +15,6 @@ test.describe("Agent Search", () => {
   });
 
   test("agent page loads with chat input", async ({ page }) => {
-    // Chat input area should be present
     const chatInput = page
       .getByRole("textbox", { name: /ask|message|question/i })
       .or(page.locator("textarea").first());
