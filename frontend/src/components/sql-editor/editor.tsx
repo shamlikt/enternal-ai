@@ -23,10 +23,15 @@ export function SqlEditor({
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const disposablesRef = useRef<IDisposable[]>([]);
   const schemaCacheRef = useRef<SchemaCache | undefined>(schemaCache);
+  const onRunRef = useRef(onRun);
 
   useEffect(() => {
     schemaCacheRef.current = schemaCache;
   }, [schemaCache]);
+
+  useEffect(() => {
+    onRunRef.current = onRun;
+  }, [onRun]);
 
   const handleMount: OnMount = useCallback(
     (editorInstance, monaco) => {
@@ -34,7 +39,7 @@ export function SqlEditor({
 
       editorInstance.addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-        () => onRun?.()
+        () => onRunRef.current?.()
       );
 
       const completionDisposable = monaco.languages.registerCompletionItemProvider("sql", {
@@ -245,7 +250,7 @@ export function SqlEditor({
 
       disposablesRef.current.push(hoverDisposable);
     },
-    [onRun]
+    []
   );
 
   useEffect(() => {
