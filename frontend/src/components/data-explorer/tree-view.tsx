@@ -9,21 +9,30 @@ import { cn } from "@/lib/utils";
 
 interface TreeViewProps {
   onInsert?: (text: string) => void;
+  tables?: PCORnetTable[];
 }
 
-export function DataExplorerTreeView({ onInsert }: TreeViewProps) {
-  const [tables, setTables] = useState<PCORnetTable[]>([]);
+export function DataExplorerTreeView({ onInsert, tables: prefetchedTables }: TreeViewProps) {
+  const [tables, setTables] = useState<PCORnetTable[]>(prefetchedTables ?? []);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!prefetchedTables);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (prefetchedTables) {
+      setTables(prefetchedTables);
+      setIsLoading(false);
+    }
+  }, [prefetchedTables]);
+
+  useEffect(() => {
+    if (prefetchedTables) return;
     api
       .get<PCORnetTable[]>("/query/schema")
       .then(setTables)
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [prefetchedTables]);
 
   const toggle = (tableName: string) => {
     setExpanded((prev) => {
@@ -100,7 +109,7 @@ function TableNode({
         <Table2 className="h-3.5 w-3.5 text-primary shrink-0" />
         <span
           className="font-medium truncate cursor-pointer hover:text-primary"
-          onDoubleClick={() => onInsert?.(table.name)}
+          onDoubleClick={() => onInsert?.(`"${table.name}"`)}
           title="Double-click to insert"
         >
           {table.name}
@@ -111,7 +120,7 @@ function TableNode({
           {table.columns.map((col) => (
             <button
               key={col.name}
-              onClick={() => onInsert?.(col.name)}
+              onClick={() => onInsert?.(`"${col.name}"`)}
               className={cn(
                 "flex items-center gap-1.5 w-full px-3 py-0.5 text-left hover:bg-muted/50 text-xs",
                 "text-muted-foreground hover:text-foreground"
