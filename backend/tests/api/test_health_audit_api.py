@@ -37,7 +37,8 @@ class TestSystemHealthEndpoint:
         assert resp.status_code == 200
         body = resp.json()
         assert "status" in body
-        assert "components" in body
+        assert "database" in body
+        assert "api" in body
         assert body["status"] in ["healthy", "degraded"]
 
     @pytest.mark.asyncio

@@ -84,10 +84,11 @@ export default function IntegrationsPage() {
     setSaving(true);
     setError(null);
     try {
+      const { name, ...configFields } = formData;
       await api.post("/integrations/", {
         type: integrationType,
-        name: formData.name,
-        config: formData,
+        name,
+        config_json: configFields,
       });
       setAddOpen(false);
       setFormData({});

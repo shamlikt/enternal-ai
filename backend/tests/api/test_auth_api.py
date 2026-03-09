@@ -1,5 +1,5 @@
 """
-API contract tests for /api/v1/auth/* and /api/v1/users/* endpoints.
+API contract tests for /api/v1/auth/* and /api/v1/auth/users/* endpoints.
 
 Tests HTTP status codes, response shapes, and authorization enforcement.
 No real DB or network — service calls are mocked via dependency_overrides.
@@ -133,7 +133,7 @@ class TestLogoutEndpoint:
 
 
 # ---------------------------------------------------------------------------
-# GET /api/v1/users/ (admin only)
+# GET /api/v1/auth/users/ (admin only)
 # ---------------------------------------------------------------------------
 
 
@@ -155,7 +155,7 @@ class TestUsersEndpoint:
         app.dependency_overrides[get_current_user] = lambda: admin
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.get("/api/v1/users/")
+            resp = await client.get("/api/v1/auth/users/")
 
         app.dependency_overrides.clear()
         assert resp.status_code == 200
@@ -169,7 +169,7 @@ class TestUsersEndpoint:
     async def test_unauthenticated_returns_401(self):
         app.dependency_overrides.clear()
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.get("/api/v1/users/")
+            resp = await client.get("/api/v1/auth/users/")
         assert resp.status_code == 401
 
     @pytest.mark.asyncio
@@ -191,7 +191,7 @@ class TestUsersEndpoint:
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             resp = await client.post(
-                "/api/v1/users/",
+                "/api/v1/auth/users/",
                 json={
                     "username": "newuser",
                     "email": "newuser@example.com",
@@ -212,7 +212,7 @@ class TestUsersEndpoint:
         app.dependency_overrides[get_current_user] = lambda: admin
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.patch("/api/v1/users/9999", json={"role": "analyst"})
+            resp = await client.patch("/api/v1/auth/users/9999", json={"role": "analyst"})
 
         app.dependency_overrides.clear()
         assert resp.status_code == 404
@@ -226,7 +226,7 @@ class TestUsersEndpoint:
         app.dependency_overrides[get_current_user] = lambda: admin
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.delete("/api/v1/users/9999")
+            resp = await client.delete("/api/v1/auth/users/9999")
 
         app.dependency_overrides.clear()
         assert resp.status_code == 404

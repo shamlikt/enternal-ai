@@ -142,13 +142,19 @@ class TestGetSystemHealth:
     @pytest.mark.asyncio
     async def test_healthy_when_db_query_succeeds(self):
         db = AsyncMock()
-        db.execute = AsyncMock()  # Doesn't raise — db is healthy
+        # First call: SELECT 1 (health check), rest: ingestion queries
+        result_mock = MagicMock()
+        result_mock.fetchone.return_value = None
+        db.execute.return_value = result_mock
 
         result = await get_system_health(db)
 
         assert result["status"] == "healthy"
-        assert result["components"]["database"] == "healthy"
-        assert result["components"]["api"] == "healthy"
+        assert result["database"]["status"] == "connected"
+        assert result["database"]["latency_ms"] is not None
+        assert result["api"]["version"] == "0.1.0"
+        assert result["api"]["uptime_seconds"] >= 0
+        assert "ingestion" in result
 
     @pytest.mark.asyncio
     async def test_degraded_when_db_query_fails(self):
@@ -158,8 +164,8 @@ class TestGetSystemHealth:
         result = await get_system_health(db)
 
         assert result["status"] == "degraded"
-        assert "unhealthy" in result["components"]["database"]
-        assert "Connection refused" in result["components"]["database"]
+        assert result["database"]["status"] == "error"
+        assert result["database"]["latency_ms"] is None
 
     @pytest.mark.asyncio
     async def test_api_always_reported_healthy(self):
@@ -168,7 +174,8 @@ class TestGetSystemHealth:
         db.execute.side_effect = Exception("DB down")
 
         result = await get_system_health(db)
-        assert result["components"]["api"] == "healthy"
+        assert result["api"]["version"] == "0.1.0"
+        assert result["api"]["uptime_seconds"] >= 0
 
 
 class TestGetIngestionHealth:

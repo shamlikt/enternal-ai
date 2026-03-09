@@ -43,7 +43,7 @@ export default function QuarantinePage() {
 
   const columnDefs = [
     { field: "id", headerName: "ID", width: 80 },
-    { field: "source_table", headerName: "Source Table", width: 160 },
+    { field: "source_resource_type", headerName: "Resource Type", width: 160 },
     { field: "ingestion_run_id", headerName: "Run ID", width: 100 },
     { field: "error_message", headerName: "Error", flex: 2 },
     {
@@ -86,17 +86,17 @@ export default function QuarantinePage() {
             <Card>
               <CardHeader className="pb-1">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  By Table
+                  By Resource Type
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {Object.entries(stats.by_table)
+                  {Object.entries(stats.by_resource_type)
                     .sort(([, a], [, b]) => b - a)
                     .slice(0, 3)
-                    .map(([table, count]) => (
-                      <div key={table} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground truncate">{table}</span>
+                    .map(([resType, count]) => (
+                      <div key={resType} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground truncate">{resType}</span>
                         <span className="font-medium">{count}</span>
                       </div>
                     ))}
@@ -106,20 +106,19 @@ export default function QuarantinePage() {
             <Card>
               <CardHeader className="pb-1">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  By Error Type
+                  Recent Errors
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {Object.entries(stats.by_error_type)
-                    .sort(([, a], [, b]) => b - a)
-                    .slice(0, 3)
-                    .map(([errType, count]) => (
-                      <div key={errType} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground truncate">{errType}</span>
-                        <span className="font-medium">{count}</span>
-                      </div>
-                    ))}
+                  {stats.recent_errors.slice(0, 3).map((errMsg, i) => (
+                    <div key={i} className="text-sm text-muted-foreground truncate" title={errMsg}>
+                      {errMsg}
+                    </div>
+                  ))}
+                  {stats.recent_errors.length === 0 && (
+                    <p className="text-sm text-muted-foreground">No errors</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

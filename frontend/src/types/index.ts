@@ -163,16 +163,16 @@ export interface IngestionRun {
 export interface QuarantineRecord {
   id: number;
   ingestion_run_id: number;
-  source_data: Record<string, unknown>;
   error_message: string;
-  source_table: string;
+  source_resource_type?: string;
+  source_resource_id?: string;
   created_at: string;
 }
 
 export interface QuarantineStats {
   total: number;
-  by_table: Record<string, number>;
-  by_error_type: Record<string, number>;
+  by_resource_type: Record<string, number>;
+  recent_errors: string[];
 }
 
 // Audit
